@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import Image from "next/image";
+
 type Camper = {
   id: string;
   name: string;
@@ -28,32 +30,60 @@ export default function Catalog() {
   const [transmissions, setTransmissions] = useState<string[]>([]);
   const [forms, setForms] = useState<string[]>([]);
   const [location, setLocation] = useState("");
-  const [campers, setCampers] = useState<Camper[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  useEffect(() => {
-    async function fetchCampers() {
-      try {
-        const response = await fetch(
-          "https://campers-api.goit.study/campers?limit=5&page=1",
-        );
+  const [searchApplied, setSearchApplied] = useState(false);
 
-        if (!response.ok) {
-          throw new Error("Не вдалося завантажити кемпери");
-        }
+  const {
+    data,
+    isLoading,
+    isError,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: ["campers"],
+    initialPageParam: 1,
+    queryFn: async ({ pageParam }): Promise<CampersResponse> => {
+      const response = await fetch(
+        `https://campers-api.goit.study/campers?limit=4&page=${pageParam}`,
+      );
 
-        const data: CampersResponse = await response.json();
-
-        setCampers(data.campers);
-      } catch {
-        setError("Помилка завантаження кемперів");
-      } finally {
-        setLoading(false);
+      if (!response.ok) {
+        throw new Error("Не вдалося завантажити кемпери");
       }
+
+      return (await response.json()) as CampersResponse;
+    },
+    getNextPageParam: (lastPage) => {
+      return lastPage.page < lastPage.totalPages
+        ? lastPage.page + 1
+        : undefined;
+    },
+  });
+
+  const campers = data?.pages.flatMap((page) => page.campers) ?? [];
+
+  const filteredCampers = campers.filter((camper) => {
+    if (!searchApplied) {
+      return true;
     }
 
-    fetchCampers();
-  }, []);
+    const matchesLocation = camper.location
+      .toLowerCase()
+      .includes(location.trim().toLowerCase());
+
+    const matchesEngine =
+      engines.length === 0 || engines.includes(camper.engine);
+
+    const matchesTransmission =
+      transmissions.length === 0 || transmissions.includes(camper.transmission);
+
+    const matchesForm = forms.length === 0 || forms.includes(camper.form);
+
+    return (
+      matchesLocation && matchesEngine && matchesTransmission && matchesForm
+    );
+  });
+
   function toggleEngine(value: string) {
     setEngines((current) =>
       current.includes(value)
@@ -61,6 +91,15 @@ export default function Catalog() {
         : [...current, value],
     );
   }
+
+  function toggleTransmission(value: string) {
+    setTransmissions((current) =>
+      current.includes(value)
+        ? current.filter((item) => item !== value)
+        : [...current, value],
+    );
+  }
+
   function toggleForm(value: string) {
     setForms((current) =>
       current.includes(value)
@@ -70,18 +109,21 @@ export default function Catalog() {
   }
 
   function handleSearch() {
-    console.log({
-      location,
-      engines,
-      transmissions,
-      forms,
-    });
+    setSearchApplied(true);
   }
+
+  function clearFilters() {
+    setLocation("");
+    setEngines([]);
+    setTransmissions([]);
+    setForms([]);
+    setSearchApplied(false);
+  }
+
   return (
     <main>
       <header>
         <Link href="/">TravelTrucks</Link>
-
         <nav>
           <Link href="/">Home</Link>
           <Link href="/catalog">Catalog</Link>
@@ -91,34 +133,50 @@ export default function Catalog() {
       <section>
         <h1>Catalog</h1>
 
-        {loading && <p>Завантаження кемперів...</p>}
+        {isLoading && <p>Завантаження кемперів...</p>}
+        {isError && <p>Помилка завантаження кемперів.</p>}
 
-        {error && <p>{error}</p>}
+        {!isLoading && !isError && (
+          <>
+            <div>
+              {filteredCampers.map((camper) => (
+                <article key={camper.id}>
+                  <Image
+                    src={camper.coverImage}
+                    alt={camper.name}
+                    width={300}
+                    height={200}
+                    style={{ objectFit: "cover" }}
+                  />
+                  <h2>{camper.name}</h2>
+                  <p>Ціна: €{camper.price}</p>
+                  <p>Рейтинг: {camper.rating}</p>
+                  <p>
+                    Коробка передач:{" "}
+                    {camper.transmission === "automatic"
+                      ? "Автоматична"
+                      : "Механічна"}
+                  </p>
+                  <p>Місце розташування: {camper.location}</p>
+                  <p>{camper.description}</p>
+                </article>
+              ))}
+            </div>
 
-        {!loading && !error && (
-          <div>
-            {campers.map((camper) => (
-              <article key={camper.id}>
-                <Image
-                  src={camper.coverImage}
-                  alt={camper.name}
-                  width={300}
-                  height={200}
-                  style={{ objectFit: "cover" }}
-                />
+            {filteredCampers.length === 0 && (
+              <p>Кемперів за заданими фільтрами не знайдено.</p>
+            )}
 
-                <h2>{camper.name}</h2>
-
-                <p>Ціна: €{camper.price}</p>
-
-                <p>Рейтинг: {camper.rating}</p>
-
-                <p>Місце розташування: {camper.location}</p>
-
-                <p>{camper.description}</p>
-              </article>
-            ))}
-          </div>
+            {hasNextPage && (
+              <button
+                type="button"
+                onClick={() => fetchNextPage()}
+                disabled={isFetchingNextPage}
+              >
+                {isFetchingNextPage ? "Завантаження..." : "Load more"}
+              </button>
+            )}
+          </>
         )}
 
         <div>
@@ -136,140 +194,60 @@ export default function Catalog() {
 
         <fieldset>
           <legend>Engine</legend>
-
-          <label>
-            <input
-              type="checkbox"
-              name="engine"
-              value="diesel"
-              checked={engines.includes("diesel")}
-              onChange={() => toggleEngine("diesel")}
-            />
-            Diesel
-          </label>
-
-          <label>
-            <input
-              type="checkbox"
-              name="engine"
-              value="petrol"
-              checked={engines.includes("petrol")}
-              onChange={() => toggleEngine("petrol")}
-            />
-            Petrol
-          </label>
-
-          <label>
-            <input
-              type="checkbox"
-              name="engine"
-              value="hybrid"
-              checked={engines.includes("hybrid")}
-              onChange={() => toggleEngine("hybrid")}
-            />
-            Hybrid
-          </label>
-
-          <label>
-            <input
-              type="checkbox"
-              name="engine"
-              value="electric"
-              checked={engines.includes("electric")}
-              onChange={() => toggleEngine("electric")}
-            />
-            Electric
-          </label>
+          {(["diesel", "petrol", "hybrid", "electric"] as const).map(
+            (engine) => (
+              <label key={engine}>
+                <input
+                  type="checkbox"
+                  checked={engines.includes(engine)}
+                  onChange={() => toggleEngine(engine)}
+                />
+                {engine}
+              </label>
+            ),
+          )}
         </fieldset>
 
         <fieldset>
           <legend>Transmission</legend>
-
-          <label>
-            <input
-              type="checkbox"
-              name="transmission"
-              value="automatic"
-              checked={transmissions.includes("automatic")}
-              onChange={() =>
-                setTransmissions((current) =>
-                  current.includes("automatic")
-                    ? current.filter((item) => item !== "automatic")
-                    : [...current, "automatic"],
-                )
-              }
-            />
-            Automatic
-          </label>
-
-          <label>
-            <input
-              type="checkbox"
-              name="transmission"
-              value="manual"
-              checked={transmissions.includes("manual")}
-              onChange={() =>
-                setTransmissions((current) =>
-                  current.includes("manual")
-                    ? current.filter((item) => item !== "manual")
-                    : [...current, "manual"],
-                )
-              }
-            />
-            Manual
-          </label>
+          {(["automatic", "manual"] as const).map((transmission) => (
+            <label key={transmission}>
+              <input
+                type="checkbox"
+                checked={transmissions.includes(transmission)}
+                onChange={() => toggleTransmission(transmission)}
+              />
+              {transmission}
+            </label>
+          ))}
         </fieldset>
 
         <fieldset>
           <legend>Camper form</legend>
-
-          <label>
-            <input
-              type="checkbox"
-              name="form"
-              value="alcove"
-              checked={forms.includes("alcove")}
-              onChange={() => toggleForm("alcove")}
-            />
-            Alcove
-          </label>
-
-          <label>
-            <input
-              type="checkbox"
-              name="form"
-              value="panelVan"
-              checked={forms.includes("panelVan")}
-              onChange={() => toggleForm("panelVan")}
-            />
-            Panel Van
-          </label>
-
-          <label>
-            <input
-              type="checkbox"
-              name="form"
-              value="integrated"
-              checked={forms.includes("integrated")}
-              onChange={() => toggleForm("integrated")}
-            />
-            Integrated
-          </label>
-
-          <label>
-            <input
-              type="checkbox"
-              name="form"
-              value="semiIntegrated"
-              checked={forms.includes("semiIntegrated")}
-              onChange={() => toggleForm("semiIntegrated")}
-            />
-            Semi Integrated
-          </label>
+          {(
+            [
+              ["alcove", "Alcove"],
+              ["panel_van", "Panel Van"],
+              ["integrated", "Integrated"],
+              ["semi_integrated", "Semi Integrated"],
+            ] as const
+          ).map(([value, label]) => (
+            <label key={value}>
+              <input
+                type="checkbox"
+                checked={forms.includes(value)}
+                onChange={() => toggleForm(value)}
+              />
+              {label}
+            </label>
+          ))}
         </fieldset>
 
         <button type="button" onClick={handleSearch}>
           Search
+        </button>
+        <button type="button" onClick={clearFilters}>
+          Clear filters
         </button>
       </section>
     </main>
