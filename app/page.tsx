@@ -1,9 +1,21 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
     <main>
-      <h1>TravelTrucks</h1>
-      <p>Find your perfect camper for your next adventure.</p>
-      <button type="button">View Now</button>
+      <header>
+        <Link href="/">TravelTrucks</Link>
+        <nav>
+          <Link href="/">Home</Link>
+          <Link href="/catalog">Catalog</Link>
+        </nav>
+      </header>
+
+      <section>
+        <h1>Campers of your dreams</h1>
+        <p>You can find everything you want in our catalog</p>
+        <Link href="/catalog">View Now</Link>
+      </section>
     </main>
   );
 }
