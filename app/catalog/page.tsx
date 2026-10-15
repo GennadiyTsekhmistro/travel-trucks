@@ -141,24 +141,26 @@ export default function Catalog() {
             <div>
               {filteredCampers.map((camper) => (
                 <article key={camper.id}>
-                  <Image
-                    src={camper.coverImage}
-                    alt={camper.name}
-                    width={300}
-                    height={200}
-                    style={{ objectFit: "cover" }}
-                  />
-                  <h2>{camper.name}</h2>
-                  <p>Ціна: €{camper.price}</p>
-                  <p>Рейтинг: {camper.rating}</p>
-                  <p>
-                    Коробка передач:{" "}
-                    {camper.transmission === "automatic"
-                      ? "Автоматична"
-                      : "Механічна"}
-                  </p>
-                  <p>Місце розташування: {camper.location}</p>
-                  <p>{camper.description}</p>
+                  <Link href={`/catalog/${camper.id}`}>
+                    <Image
+                      src={camper.coverImage}
+                      alt={camper.name}
+                      width={300}
+                      height={200}
+                      style={{ objectFit: "cover" }}
+                    />
+                    <h2>{camper.name}</h2>
+                    <p>Ціна: €{camper.price}</p>
+                    <p>Рейтинг: {camper.rating}</p>
+                    <p>
+                      Коробка передач:{" "}
+                      {camper.transmission === "automatic"
+                        ? "Автоматична"
+                        : "Механічна"}
+                    </p>
+                    <p>Місце розташування: {camper.location}</p>
+                    <p>{camper.description}</p>
+                  </Link>
                 </article>
               ))}
             </div>
