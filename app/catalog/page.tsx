@@ -53,11 +53,8 @@ export default function Catalog() {
 
       return (await response.json()) as CampersResponse;
     },
-    getNextPageParam: (lastPage) => {
-      return lastPage.page < lastPage.totalPages
-        ? lastPage.page + 1
-        : undefined;
-    },
+    getNextPageParam: (lastPage) =>
+      lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
   });
 
   const campers = data?.pages.flatMap((page) => page.campers) ?? [];
@@ -121,137 +118,170 @@ export default function Catalog() {
   }
 
   return (
-    <main>
-      <header>
-        <Link href="/">TravelTrucks</Link>
-        <nav>
-          <Link href="/">Home</Link>
-          <Link href="/catalog">Catalog</Link>
-        </nav>
-      </header>
+    <main className="catalog-page">
+      <div className="catalog-layout">
+        <aside className="catalog-navigation">
+          <div className="catalog-info">
+            <div className="catalog-location">
+              <label className="catalog-location-label" htmlFor="location">
+                Location
+              </label>
 
-      <section>
-        <h1>Catalog</h1>
+              <div className="catalog-location-input">
+                <Image src="/map.svg" alt="" width={20} height={20} />
 
-        {isLoading && <p>Завантаження кемперів...</p>}
-        {isError && <p>Помилка завантаження кемперів.</p>}
-
-        {!isLoading && !isError && (
-          <>
-            <div>
-              {filteredCampers.map((camper) => (
-                <article key={camper.id}>
-                  <Link href={`/catalog/${camper.id}`}>
-                    <Image
-                      src={camper.coverImage}
-                      alt={camper.name}
-                      width={300}
-                      height={200}
-                      style={{ objectFit: "cover" }}
-                    />
-                    <h2>{camper.name}</h2>
-                    <p>Ціна: €{camper.price}</p>
-                    <p>Рейтинг: {camper.rating}</p>
-                    <p>
-                      Коробка передач:{" "}
-                      {camper.transmission === "automatic"
-                        ? "Автоматична"
-                        : "Механічна"}
-                    </p>
-                    <p>Місце розташування: {camper.location}</p>
-                    <p>{camper.description}</p>
-                  </Link>
-                </article>
-              ))}
+                <input
+                  id="location"
+                  type="text"
+                  placeholder="City"
+                  value={location}
+                  onChange={(event) => setLocation(event.target.value)}
+                />
+              </div>
             </div>
 
-            {filteredCampers.length === 0 && (
-              <p>Кемперів за заданими фільтрами не знайдено.</p>
-            )}
+            <div className="catalog-filters">
+              <h2>Filters</h2>
 
-            {hasNextPage && (
-              <button
-                type="button"
-                onClick={() => fetchNextPage()}
-                disabled={isFetchingNextPage}
+              <fieldset>
+                <legend>Vehicle equipment</legend>
+                {(["diesel", "petrol", "hybrid", "electric"] as const).map(
+                  (engine) => (
+                    <label key={engine}>
+                      <input
+                        type="checkbox"
+                        checked={engines.includes(engine)}
+                        onChange={() => toggleEngine(engine)}
+                      />
+                      {engine}
+                    </label>
+                  ),
+                )}
+              </fieldset>
+
+              <fieldset>
+                <legend>Transmission</legend>
+                {(["automatic", "manual"] as const).map((transmission) => (
+                  <label key={transmission}>
+                    <input
+                      type="checkbox"
+                      checked={transmissions.includes(transmission)}
+                      onChange={() => toggleTransmission(transmission)}
+                    />
+                    {transmission}
+                  </label>
+                ))}
+              </fieldset>
+
+              <fieldset className="catalog-form-filter">
+                <legend>Camper form</legend>
+
+                {(
+                  [
+                    ["alcove", "Alcove"],
+                    ["panel_van", "Panel Van"],
+                    ["integrated", "Integrated"],
+                    ["semi_integrated", "Semi Integrated"],
+                  ] as const
+                ).map(([value, label]) => (
+                  <label className="catalog-form-option" key={value}>
+                    <input
+                      type="checkbox"
+                      checked={forms.includes(value)}
+                      onChange={() => toggleForm(value)}
+                    />
+                    <span className="catalog-radio-circle" aria-hidden="true" />
+                    <span>{label}</span>
+                  </label>
+                ))}
+              </fieldset>
+            </div>
+          </div>
+
+          <div className="catalog-buttons">
+            <button
+              className="catalog-search-button"
+              type="button"
+              onClick={handleSearch}
+            >
+              Search
+            </button>
+
+            <button
+              className="catalog-clear-button"
+              type="button"
+              onClick={clearFilters}
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
               >
-                {isFetchingNextPage ? "Завантаження..." : "Load more"}
-              </button>
-            )}
-          </>
-        )}
-
-        <div>
-          <label htmlFor="location">Location</label>
-          <input
-            id="location"
-            type="text"
-            placeholder="City"
-            value={location}
-            onChange={(event) => setLocation(event.target.value)}
-          />
-        </div>
-
-        <h2>Filters</h2>
-
-        <fieldset>
-          <legend>Engine</legend>
-          {(["diesel", "petrol", "hybrid", "electric"] as const).map(
-            (engine) => (
-              <label key={engine}>
-                <input
-                  type="checkbox"
-                  checked={engines.includes(engine)}
-                  onChange={() => toggleEngine(engine)}
+                <path
+                  d="M17.25 17.25L6.75 6.75M17.25 6.75L6.75 17.25"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
-                {engine}
-              </label>
-            ),
+              </svg>
+              <span>Clear filters</span>
+            </button>
+          </div>
+        </aside>
+
+        <section className="catalog-results">
+          {isLoading && <p>Завантаження кемперів...</p>}
+          {isError && <p>Помилка завантаження кемперів.</p>}
+
+          {!isLoading && !isError && (
+            <>
+              <div className="catalog-campers">
+                {filteredCampers.map((camper) => (
+                  <article className="catalog-camper" key={camper.id}>
+                    <Link href={`/catalog/${camper.id}`}>
+                      <Image
+                        src={camper.coverImage}
+                        alt={camper.name}
+                        width={300}
+                        height={200}
+                        style={{ objectFit: "cover" }}
+                      />
+                      <h2>{camper.name}</h2>
+                      <p>Ціна: €{camper.price}</p>
+                      <p>Рейтинг: {camper.rating}</p>
+                      <p>
+                        Коробка передач:{" "}
+                        {camper.transmission === "automatic"
+                          ? "Автоматична"
+                          : "Механічна"}
+                      </p>
+                      <p>Місце розташування: {camper.location}</p>
+                      <p>{camper.description}</p>
+                    </Link>
+                  </article>
+                ))}
+              </div>
+
+              {filteredCampers.length === 0 && (
+                <p>Кемперів за заданими фільтрами не знайдено.</p>
+              )}
+
+              {hasNextPage && (
+                <button
+                  type="button"
+                  onClick={() => fetchNextPage()}
+                  disabled={isFetchingNextPage}
+                >
+                  {isFetchingNextPage ? "Завантаження..." : "Load more"}
+                </button>
+              )}
+            </>
           )}
-        </fieldset>
-
-        <fieldset>
-          <legend>Transmission</legend>
-          {(["automatic", "manual"] as const).map((transmission) => (
-            <label key={transmission}>
-              <input
-                type="checkbox"
-                checked={transmissions.includes(transmission)}
-                onChange={() => toggleTransmission(transmission)}
-              />
-              {transmission}
-            </label>
-          ))}
-        </fieldset>
-
-        <fieldset>
-          <legend>Camper form</legend>
-          {(
-            [
-              ["alcove", "Alcove"],
-              ["panel_van", "Panel Van"],
-              ["integrated", "Integrated"],
-              ["semi_integrated", "Semi Integrated"],
-            ] as const
-          ).map(([value, label]) => (
-            <label key={value}>
-              <input
-                type="checkbox"
-                checked={forms.includes(value)}
-                onChange={() => toggleForm(value)}
-              />
-              {label}
-            </label>
-          ))}
-        </fieldset>
-
-        <button type="button" onClick={handleSearch}>
-          Search
-        </button>
-        <button type="button" onClick={clearFilters}>
-          Clear filters
-        </button>
-      </section>
+        </section>
+      </div>
     </main>
   );
 }

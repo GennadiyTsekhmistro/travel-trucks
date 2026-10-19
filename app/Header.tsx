@@ -2,8 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function Header() {
+  const pathname = usePathname();
   return (
     <header className="header">
       {" "}
@@ -18,11 +20,17 @@ export default function Header() {
         />{" "}
       </Link>
       <nav className="header-menu">
-        <Link href="/" className="menu-link menu-link-active">
+        <Link
+          href="/"
+          className={`menu-link ${pathname === "/" ? "menu-link-active" : ""}`}
+        >
           Home
         </Link>
 
-        <Link href="/catalog" className="menu-link">
+        <Link
+          href="/catalog"
+          className={`menu-link ${pathname === "/catalog" ? "menu-link-active" : ""}`}
+        >
           Catalog
         </Link>
       </nav>
