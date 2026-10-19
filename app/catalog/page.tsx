@@ -59,6 +59,7 @@ export default function Catalog() {
 
   const campers = data?.pages.flatMap((page) => page.campers) ?? [];
 
+  console.log("Перший кемпер:", campers[0]);
   const filteredCampers = campers.filter((camper) => {
     if (!searchApplied) {
       return true;
@@ -143,36 +144,6 @@ export default function Catalog() {
             <div className="catalog-filters">
               <h2>Filters</h2>
 
-              <fieldset>
-                <legend>Vehicle equipment</legend>
-                {(["diesel", "petrol", "hybrid", "electric"] as const).map(
-                  (engine) => (
-                    <label key={engine}>
-                      <input
-                        type="checkbox"
-                        checked={engines.includes(engine)}
-                        onChange={() => toggleEngine(engine)}
-                      />
-                      {engine}
-                    </label>
-                  ),
-                )}
-              </fieldset>
-
-              <fieldset>
-                <legend>Transmission</legend>
-                {(["automatic", "manual"] as const).map((transmission) => (
-                  <label key={transmission}>
-                    <input
-                      type="checkbox"
-                      checked={transmissions.includes(transmission)}
-                      onChange={() => toggleTransmission(transmission)}
-                    />
-                    {transmission}
-                  </label>
-                ))}
-              </fieldset>
-
               <fieldset className="catalog-form-filter">
                 <legend>Camper form</legend>
 
@@ -192,6 +163,54 @@ export default function Catalog() {
                     />
                     <span className="catalog-radio-circle" aria-hidden="true" />
                     <span>{label}</span>
+                  </label>
+                ))}
+              </fieldset>
+
+              <fieldset className="catalog-engine-filter">
+                <legend>Engine</legend>
+
+                {(["diesel", "petrol", "hybrid", "electric"] as const).map(
+                  (engine) => (
+                    <label className="catalog-engine-option" key={engine}>
+                      <input
+                        type="checkbox"
+                        checked={engines.includes(engine)}
+                        onChange={() => toggleEngine(engine)}
+                      />
+                      <span
+                        className="catalog-engine-circle"
+                        aria-hidden="true"
+                      />
+                      <span>
+                        {engine.charAt(0).toUpperCase() + engine.slice(1)}
+                      </span>
+                    </label>
+                  ),
+                )}
+              </fieldset>
+
+              <fieldset className="catalog-transmission-filter">
+                <legend>Transmission</legend>
+
+                {(["automatic", "manual"] as const).map((transmission) => (
+                  <label
+                    className="catalog-transmission-option"
+                    key={transmission}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={transmissions.includes(transmission)}
+                      onChange={() => toggleTransmission(transmission)}
+                    />
+                    <span
+                      className="catalog-transmission-circle"
+                      aria-hidden="true"
+                    />
+                    <span>
+                      {transmission.charAt(0).toUpperCase() +
+                        transmission.slice(1)}
+                    </span>
                   </label>
                 ))}
               </fieldset>
@@ -241,26 +260,89 @@ export default function Catalog() {
               <div className="catalog-campers">
                 {filteredCampers.map((camper) => (
                   <article className="catalog-camper" key={camper.id}>
-                    <Link href={`/catalog/${camper.id}`}>
-                      <Image
-                        src={camper.coverImage}
-                        alt={camper.name}
-                        width={300}
-                        height={200}
-                        style={{ objectFit: "cover" }}
-                      />
-                      <h2>{camper.name}</h2>
-                      <p>Ціна: €{camper.price}</p>
-                      <p>Рейтинг: {camper.rating}</p>
-                      <p>
-                        Коробка передач:{" "}
-                        {camper.transmission === "automatic"
-                          ? "Автоматична"
-                          : "Механічна"}
-                      </p>
-                      <p>Місце розташування: {camper.location}</p>
-                      <p>{camper.description}</p>
-                    </Link>
+                    <div className="catalog-camper-content">
+                      <Link
+                        href={`/catalog/${camper.id}`}
+                        className="catalog-camper-image"
+                      >
+                        <Image
+                          src={camper.coverImage}
+                          alt={camper.name}
+                          width={219}
+                          height={240}
+                          style={{ objectFit: "cover" }}
+                        />
+                      </Link>
+
+                      <div className="catalog-camper-info">
+                        <div className="catalog-camper-heading">
+                          <div className="catalog-camper-title-row">
+                            <h2>{camper.name}</h2>
+                            <p className="catalog-camper-price">
+                              €{camper.price.toLocaleString("en-US")}
+                            </p>
+                          </div>
+
+                          <div className="catalog-camper-details">
+                            <div className="catalog-camper-rating">
+                              <svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 16 16"
+                                fill="#FFC531"
+                                aria-hidden="true"
+                              >
+                                <path d="M8 0.8l2.2 4.45 4.9.71-3.55 3.46.84 4.88L8 12l-4.39 2.3.84-4.88L.9 5.96l4.9-.71L8 .8z" />
+                              </svg>
+                              <span>{camper.rating}</span>
+                            </div>
+
+                            <div className="catalog-camper-location">
+                              <Image
+                                src="/map.svg"
+                                alt=""
+                                width={16}
+                                height={16}
+                              />
+                              <span>{camper.location}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <p className="catalog-camper-description">
+                          {camper.description}
+                        </p>
+
+                        <div className="catalog-camper-badges">
+                          <span className="catalog-camper-badge">
+                            {camper.engine.charAt(0).toUpperCase() +
+                              camper.engine.slice(1)}
+                          </span>
+
+                          <span className="catalog-camper-badge">
+                            {camper.transmission.charAt(0).toUpperCase() +
+                              camper.transmission.slice(1)}
+                          </span>
+
+                          <span className="catalog-camper-badge">
+                            {camper.form
+                              .split("_")
+                              .map(
+                                (word) =>
+                                  word.charAt(0).toUpperCase() + word.slice(1),
+                              )
+                              .join(" ")}
+                          </span>
+                        </div>
+
+                        <Link
+                          href={`/catalog/${camper.id}`}
+                          className="catalog-camper-button"
+                        >
+                          Show more
+                        </Link>
+                      </div>
+                    </div>
                   </article>
                 ))}
               </div>
