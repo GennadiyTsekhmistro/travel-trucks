@@ -19,7 +19,17 @@ type Camper = {
   consumption: string;
   transmission: "automatic" | "manual";
   engine: "diesel" | "petrol" | "hybrid" | "electric";
-  amenities: string[];
+  amenities: (
+    | "ac"
+    | "bathroom"
+    | "kitchen"
+    | "tv"
+    | "radio"
+    | "refrigerator"
+    | "microwave"
+    | "gas"
+    | "water"
+  )[];
   coverImage: string;
   totalReviews: number;
 };
@@ -31,16 +41,17 @@ type CamperFilters = {
 };
 
 type CampersResponse = {
-  campers: Camper[];
-  total: number;
   page: number;
+  perPage: number;
+  total: number;
   totalPages: number;
+  campers: Camper[];
 };
 
 export default function Catalog() {
-  const [engines, setEngines] = useState<string[]>([]);
-  const [transmissions, setTransmissions] = useState<string[]>([]);
-  const [forms, setForms] = useState<string[]>([]);
+  const [engine, setEngine] = useState("");
+  const [transmission, setTransmission] = useState("");
+  const [form, setForm] = useState("");
   const [location, setLocation] = useState("");
   const [searchApplied, setSearchApplied] = useState(false);
 
@@ -75,32 +86,32 @@ export default function Catalog() {
       "campers",
       searchApplied,
       searchApplied ? location.trim() : "",
-      searchApplied ? engines : [],
-      searchApplied ? transmissions : [],
-      searchApplied ? forms : [],
+      searchApplied ? engine : "",
+      searchApplied ? transmission : "",
+      searchApplied ? form : "",
     ],
     initialPageParam: 1,
     queryFn: async ({ pageParam }): Promise<CampersResponse> => {
       const params = new URLSearchParams();
 
       params.set("page", String(pageParam));
-      params.set("perPage", "5");
+      params.set("perPage", "4");
 
       if (searchApplied) {
         if (location.trim()) {
           params.set("location", location.trim());
         }
 
-        if (engines.length > 0) {
-          params.set("engine", engines[0]);
+        if (engine) {
+          params.set("engine", engine);
         }
 
-        if (transmissions.length > 0) {
-          params.set("transmission", transmissions[0]);
+        if (transmission) {
+          params.set("transmission", transmission);
         }
 
-        if (forms.length > 0) {
-          params.set("form", forms[0]);
+        if (form) {
+          params.set("form", form);
         }
       }
 
@@ -121,27 +132,15 @@ export default function Catalog() {
   const campers = data?.pages.flatMap((page) => page.campers) ?? [];
 
   function toggleEngine(value: string) {
-    setEngines((current) =>
-      current.includes(value)
-        ? current.filter((engine) => engine !== value)
-        : [...current, value],
-    );
+    setEngine((current) => (current === value ? "" : value));
   }
 
   function toggleTransmission(value: string) {
-    setTransmissions((current) =>
-      current.includes(value)
-        ? current.filter((item) => item !== value)
-        : [...current, value],
-    );
+    setTransmission((current) => (current === value ? "" : value));
   }
 
   function toggleForm(value: string) {
-    setForms((current) =>
-      current.includes(value)
-        ? current.filter((form) => form !== value)
-        : [...current, value],
-    );
+    setForm((current) => (current === value ? "" : value));
   }
 
   function handleSearch() {
@@ -150,9 +149,9 @@ export default function Catalog() {
 
   function clearFilters() {
     setLocation("");
-    setEngines([]);
-    setTransmissions([]);
-    setForms([]);
+    setEngine("");
+    setTransmission("");
+    setForm("");
     setSearchApplied(false);
   }
 
@@ -195,7 +194,7 @@ export default function Catalog() {
                       <label className="catalog-form-option" key={value}>
                         <input
                           type="checkbox"
-                          checked={forms.includes(value)}
+                          checked={form === value}
                           onChange={() => toggleForm(value)}
                         />
                         <span
@@ -218,19 +217,19 @@ export default function Catalog() {
                   <fieldset className="catalog-engine-filter">
                     <legend>Engine</legend>
 
-                    {filters.engines.map((engine) => (
-                      <label className="catalog-engine-option" key={engine}>
+                    {filters.engines.map((value) => (
+                      <label className="catalog-engine-option" key={value}>
                         <input
                           type="checkbox"
-                          checked={engines.includes(engine)}
-                          onChange={() => toggleEngine(engine)}
+                          checked={engine === value}
+                          onChange={() => toggleEngine(value)}
                         />
                         <span
                           className="catalog-engine-circle"
                           aria-hidden="true"
                         />
                         <span>
-                          {engine.charAt(0).toUpperCase() + engine.slice(1)}
+                          {value.charAt(0).toUpperCase() + value.slice(1)}
                         </span>
                       </label>
                     ))}
@@ -239,23 +238,22 @@ export default function Catalog() {
                   <fieldset className="catalog-transmission-filter">
                     <legend>Transmission</legend>
 
-                    {filters.transmissions.map((transmission) => (
+                    {filters.transmissions.map((value) => (
                       <label
                         className="catalog-transmission-option"
-                        key={transmission}
+                        key={value}
                       >
                         <input
                           type="checkbox"
-                          checked={transmissions.includes(transmission)}
-                          onChange={() => toggleTransmission(transmission)}
+                          checked={transmission === value}
+                          onChange={() => toggleTransmission(value)}
                         />
                         <span
                           className="catalog-transmission-circle"
                           aria-hidden="true"
                         />
                         <span>
-                          {transmission.charAt(0).toUpperCase() +
-                            transmission.slice(1)}
+                          {value.charAt(0).toUpperCase() + value.slice(1)}
                         </span>
                       </label>
                     ))}
@@ -313,6 +311,8 @@ export default function Catalog() {
                       <Link
                         href={`/catalog/${camper.id}`}
                         className="catalog-camper-image"
+                        target="_blank"
+                        rel="noopener noreferrer"
                       >
                         <Image
                           src={camper.coverImage}
@@ -407,6 +407,8 @@ export default function Catalog() {
                         <Link
                           href={`/catalog/${camper.id}`}
                           className="catalog-camper-button"
+                          target="_blank"
+                          rel="noopener noreferrer"
                         >
                           Show more
                         </Link>
