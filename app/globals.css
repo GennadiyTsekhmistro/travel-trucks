@@ -663,11 +663,15 @@ section>a:hover {
   flex-shrink: 0;
 }
 
+
 .catalog-campers {
   display: flex;
   flex-direction: column;
   gap: 32px;
   width: 888px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 .catalog-camper {
@@ -826,6 +830,7 @@ section>a:hover {
   border-radius: 100px;
   background: #f2f4f7;
   color: #101828;
+  gap: 8px;
   font-family: "Inter", sans-serif;
   font-size: 16px;
   font-weight: 500;
@@ -869,6 +874,35 @@ section>a:hover {
 }
 
 .catalog-results>button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+
+.catalog-load-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+  gap: 10px;
+  box-sizing: border-box;
+  border: 1px solid #dadde1;
+  border-radius: 200px;
+  padding: 16px 32px;
+  width: 145px;
+  height: 56px;
+  margin: 40px auto 0;
+  background: #ffffff;
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 150%;
+  letter-spacing: -0.01em;
+  color: #101828;
+  cursor: pointer;
+}
+
+.catalog-load-more:disabled {
   cursor: wait;
   opacity: 0.6;
 }

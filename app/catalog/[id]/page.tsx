@@ -1,4 +1,6 @@
 import Image from "next/image";
+import Link from "next/link";
+import BookingForm from "./BookingForm";
 
 type Camper = {
   id: string;
@@ -16,7 +18,7 @@ type Camper = {
   consumption: string;
   transmission: string;
   engine: string;
-  amenities: string[];
+  amenities: string[] | string;
   gallery: {
     id: string;
     camperId: string;
@@ -24,6 +26,15 @@ type Camper = {
     original: string;
     order: number;
   }[];
+};
+
+type Review = {
+  id: string;
+  camperId: string;
+  reviewer_name: string;
+  reviewer_rating: number;
+  comment: string;
+  createdAt: string;
 };
 
 async function getCamper(id: string): Promise<Camper | null> {
@@ -39,7 +50,26 @@ async function getCamper(id: string): Promise<Camper | null> {
     throw new Error("Не вдалося завантажити кемпер");
   }
 
-  return response.json();
+  return (await response.json()) as Camper;
+}
+
+async function getReviews(id: string): Promise<Review[]> {
+  const response = await fetch(
+    `https://campers-api.goit.study/campers/${id}/reviews`,
+    {
+      cache: "no-store",
+    },
+  );
+
+  if (response.status === 404) {
+    return [];
+  }
+
+  if (!response.ok) {
+    throw new Error("Не вдалося завантажити відгуки");
+  }
+
+  return (await response.json()) as Review[];
 }
 
 export default async function CamperDetails({
@@ -50,19 +80,25 @@ export default async function CamperDetails({
   const { id } = await params;
   const camper = await getCamper(id);
 
+  const reviews = camper ? await getReviews(id) : [];
+
   if (!camper) {
     return (
       <main>
         <h1>Кемпер не знайдено</h1>
+        <Link href="/catalog">← Назад до каталогу</Link>
       </main>
     );
   }
 
+  const amenities = Array.isArray(camper.amenities)
+    ? camper.amenities
+    : [camper.amenities];
+
   return (
     <main>
-      {" "}
-      <a href="/catalog">← Назад до каталогу</a>
-      ```
+      <Link href="/catalog">← Назад до каталогу</Link>
+
       <h1>{camper.name}</h1>
       <p>Ціна: €{camper.price}</p>
       <p>
@@ -70,6 +106,7 @@ export default async function CamperDetails({
       </p>
       <p>Місце розташування: {camper.location}</p>
       <p>{camper.description}</p>
+
       <h2>Фотографії</h2>
       <div>
         {camper.gallery.map((photo) => (
@@ -83,6 +120,7 @@ export default async function CamperDetails({
           />
         ))}
       </div>
+
       <h2>Характеристики</h2>
       <ul>
         <li>Тип: {camper.form}</li>
@@ -94,12 +132,31 @@ export default async function CamperDetails({
         <li>Бак: {camper.tank}</li>
         <li>Витрата пального: {camper.consumption}</li>
       </ul>
+
       <h2>Зручності</h2>
       <ul>
-        {camper.amenities.map((amenity) => (
+        {amenities.map((amenity) => (
           <li key={amenity}>{amenity}</li>
         ))}
       </ul>
+
+      <h2>Відгуки</h2>
+      {reviews.length === 0 ? (
+        <p>Відгуків поки немає.</p>
+      ) : (
+        <ul>
+          {reviews.map((review) => (
+            <li key={review.id}>
+              <h3>{review.reviewer_name}</h3>
+              <p>Оцінка: {review.reviewer_rating} / 5</p>
+              <p>{review.comment}</p>
+              <p>{new Date(review.createdAt).toLocaleDateString("uk-UA")}</p>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <BookingForm camperId={camper.id} />
     </main>
   );
 }
