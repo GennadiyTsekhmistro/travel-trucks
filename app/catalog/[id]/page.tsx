@@ -79,84 +79,185 @@ export default async function CamperDetails({
 }) {
   const { id } = await params;
   const camper = await getCamper(id);
-
   const reviews = camper ? await getReviews(id) : [];
 
   if (!camper) {
     return (
-      <main>
+      <main className="details-main">
         <h1>Кемпер не знайдено</h1>
         <Link href="/catalog">← Назад до каталогу</Link>
       </main>
     );
   }
 
-  const amenities = Array.isArray(camper.amenities)
-    ? camper.amenities
-    : [camper.amenities];
-
   return (
-    <main>
-      <Link href="/catalog">← Назад до каталогу</Link>
+    <div className="details-page">
+      <main className="details-main">
+        <section className="top-section">
+          <div className="image-thumbnails">
+            {camper.gallery.length > 0 && (
+              <Image
+                className="details-main-image"
+                src={camper.gallery[0].original}
+                alt={camper.name}
+                width={638}
+                height={505}
+                priority
+              />
+            )}
 
-      <h1>{camper.name}</h1>
-      <p>Ціна: €{camper.price}</p>
-      <p>
-        Рейтинг: {camper.rating} ({camper.totalReviews} відгуків)
-      </p>
-      <p>Місце розташування: {camper.location}</p>
-      <p>{camper.description}</p>
+            <div className="details-thumbnails">
+              {/* {camper.gallery.slice(1).map((photo) => ( */}
+                {camper.gallery.map((photo) => (
+                <Image
+                  key={photo.id}
+                  src={photo.original}
+                  alt={camper.name}
+                  width={135}
+                  height={144}
+                />
+              ))}
+            </div>
+          </div>
 
-      <h2>Фотографії</h2>
-      <div>
-        {camper.gallery.map((photo) => (
-          <Image
-            key={photo.id}
-            src={photo.original}
-            alt={camper.name}
-            width={400}
-            height={300}
-            style={{ objectFit: "cover" }}
-          />
-        ))}
-      </div>
+          <div className="info-container">
+            <section className="header-rating">
+              <div className="details-title">
+                <div className="details-title-row">
+                  <h1>{camper.name}</h1>
+                </div>
 
-      <h2>Характеристики</h2>
-      <ul>
-        <li>Тип: {camper.form}</li>
-        <li>Двигун: {camper.engine}</li>
-        <li>Коробка передач: {camper.transmission}</li>
-        <li>Довжина: {camper.length}</li>
-        <li>Ширина: {camper.width}</li>
-        <li>Висота: {camper.height}</li>
-        <li>Бак: {camper.tank}</li>
-        <li>Витрата пального: {camper.consumption}</li>
-      </ul>
+                <div className="details-rating">
+                  <div className="details-reviews">
+                    <div className="details-review-rating">
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M8 1.2L10.1 5.5L14.8 6.2L11.4 9.5L12.2 14.2L8 12L3.8 14.2L4.6 9.5L1.2 6.2L5.9 5.5L8 1.2Z"
+                          fill="#FFC531"
+                          stroke="#FFC531"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
 
-      <h2>Зручності</h2>
-      <ul>
-        {amenities.map((amenity) => (
-          <li key={amenity}>{amenity}</li>
-        ))}
-      </ul>
+                      <span>
+                        {camper.rating} ({camper.totalReviews} Reviews)
+                      </span>
+                    </div>
 
-      <h2>Відгуки</h2>
-      {reviews.length === 0 ? (
-        <p>Відгуків поки немає.</p>
-      ) : (
-        <ul>
-          {reviews.map((review) => (
-            <li key={review.id}>
-              <h3>{review.reviewer_name}</h3>
-              <p>Оцінка: {review.reviewer_rating} / 5</p>
-              <p>{review.comment}</p>
-              <p>{new Date(review.createdAt).toLocaleDateString("uk-UA")}</p>
-            </li>
-          ))}
-        </ul>
-      )}
+                    <div className="details-location">
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M15.8 0.5V14.5L10.5 15.5L5.5 14.5L0.5 15.5V1.5L5.5 0.5L10.5 1.5L15.8 0.5Z"
+                          stroke="#101828"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M5.5 0.5V14.5M10.5 1.5V15.5"
+                          stroke="#101828"
+                        />
+                      </svg>
 
-      <BookingForm camperId={camper.id} />
-    </main>
+                      <span>{camper.location}</span>
+                    </div>
+                  </div>
+
+                  <p className="details-price">€{camper.price}</p>
+                </div>
+              </div>
+            </section>
+
+            <section className="details-info">
+              <div className="features-section">
+                <h2>Vehicle details</h2>
+
+                <div className="badges-container">
+                  <span className="details-badge">Automatic</span>
+                  <span className="details-badge">AC</span>
+                  <span className="details-badge">Petrol</span>
+                  <span className="details-badge">Kitchen</span>
+                  <span className="details-badge">Radio</span>
+                  <span className="details-badge">Alcove</span>
+                </div>
+              </div>
+
+              <div className="details-divider" />
+
+              <div className="details-attributes">
+                <div className="details-attribute">
+                  <span>Form</span>
+                  <span>{camper.form}</span>
+                </div>
+
+                <div className="details-attribute">
+                  <span>Length</span>
+                  <span>{camper.length}</span>
+                </div>
+
+                <div className="details-attribute">
+                  <span>Width</span>
+                  <span>{camper.width}</span>
+                </div>
+
+                <div className="details-attribute">
+                  <span>Height</span>
+                  <span>{camper.height}</span>
+                </div>
+
+                <div className="details-attribute">
+                  <span>Tank</span>
+                  <span>{camper.tank}</span>
+                </div>
+
+                <div className="details-attribute">
+                  <span>Consumption</span>
+                  <span>{camper.consumption}</span>
+                </div>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section className="reviews-section">
+          <h2>Відгуки</h2>
+
+          {reviews.length === 0 ? (
+            <p>Відгуків поки немає.</p>
+          ) : (
+            <ul>
+              {reviews.map((review) => (
+                <li key={review.id}>
+                  <h3>{review.reviewer_name}</h3>
+
+                  <p aria-label={`Оцінка: ${review.reviewer_rating} з 5`}>
+                    {"★".repeat(review.reviewer_rating)}
+                    {"☆".repeat(5 - review.reviewer_rating)}
+                  </p>
+
+                  <p>{review.comment}</p>
+
+                  <p>
+                    {new Date(review.createdAt).toLocaleDateString("uk-UA")}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <BookingForm camperId={camper.id} />
+        </section>
+      </main>
+    </div>
   );
 }
