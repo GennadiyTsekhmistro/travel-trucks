@@ -108,7 +108,7 @@ export default async function CamperDetails({
 
             <div className="details-thumbnails">
               {/* {camper.gallery.slice(1).map((photo) => ( */}
-                {camper.gallery.map((photo) => (
+              {camper.gallery.map((photo) => (
                 <Image
                   key={photo.id}
                   src={photo.original}
@@ -229,34 +229,47 @@ export default async function CamperDetails({
           </div>
         </section>
 
-        <section className="reviews-section">
-          <h2>Відгуки</h2>
+        <div className="details-bottom">
+          <section className="reviews-section">
+            <h2>Reviews</h2>
 
-          {reviews.length === 0 ? (
-            <p>Відгуків поки немає.</p>
-          ) : (
-            <ul>
-              {reviews.map((review) => (
-                <li key={review.id}>
-                  <h3>{review.reviewer_name}</h3>
+            {reviews.length === 0 ? (
+              <p>Відгуків поки немає.</p>
+            ) : (
+              <ul className="reviews-list">
+                {reviews.map((review) => (
+                  <li className="review-card" key={review.id}>
+                    <div className="review-person">
+                      <div className="review-avatar" aria-hidden="true">
+                        {review.reviewer_name.charAt(0).toUpperCase()}
+                      </div>
 
-                  <p aria-label={`Оцінка: ${review.reviewer_rating} з 5`}>
-                    {"★".repeat(review.reviewer_rating)}
-                    {"☆".repeat(5 - review.reviewer_rating)}
-                  </p>
+                      <div className="review-person-info">
+                        <h3>{review.reviewer_name}</h3>
 
-                  <p>{review.comment}</p>
+                        <p
+                          className="review-stars"
+                          aria-label={`Оцінка: ${review.reviewer_rating} з 5`}
+                        >
+                          <span className="review-stars-filled">
+                            {"★".repeat(review.reviewer_rating)}
+                          </span>
+                          <span className="review-stars-empty">
+                            {"★".repeat(5 - review.reviewer_rating)}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
 
-                  <p>
-                    {new Date(review.createdAt).toLocaleDateString("uk-UA")}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          )}
+                    <p className="review-comment">{review.comment}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
 
           <BookingForm camperId={camper.id} />
-        </section>
+        </div>
       </main>
     </div>
   );
