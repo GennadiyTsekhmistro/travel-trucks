@@ -107,7 +107,6 @@ export default async function CamperDetails({
             )}
 
             <div className="details-thumbnails">
-              {/* {camper.gallery.slice(1).map((photo) => ( */}
               {camper.gallery.map((photo) => (
                 <Image
                   key={photo.id}

@@ -85,16 +85,6 @@ section {
   padding: 0;
 }
 
-/* section {
-  min-height: calc(100vh - 72px);
-  padding: 40px 64px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  background: #f7f7f7;
-} */
-
 h1 {
   max-width: 600px;
   margin: 0 0 24px;
@@ -665,8 +655,6 @@ section>a:hover {
   outline-offset: 2px;
 }
 
-
-/* Картки каталогу */
 .catalog-page .catalog-results {
   width: 888px;
   flex-shrink: 0;
@@ -1390,7 +1378,6 @@ section>a:hover {
   list-style: none;
 }
 
-/* Одна картка відгуку */
 .review-card {
   display: flex;
   flex-direction: column;
