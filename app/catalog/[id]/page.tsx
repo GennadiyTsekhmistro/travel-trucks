@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 import BookingForm from "./BookingForm";
+import GallerySwiper from "./GallerySwiper";
 
 type Camper = {
   id: string;
@@ -94,30 +94,7 @@ export default async function CamperDetails({
     <div className="details-page">
       <main className="details-main">
         <section className="top-section">
-          <div className="image-thumbnails">
-            {camper.gallery.length > 0 && (
-              <Image
-                className="details-main-image"
-                src={camper.gallery[0].original}
-                alt={camper.name}
-                width={638}
-                height={505}
-                priority
-              />
-            )}
-
-            <div className="details-thumbnails">
-              {camper.gallery.map((photo) => (
-                <Image
-                  key={photo.id}
-                  src={photo.original}
-                  alt={camper.name}
-                  width={135}
-                  height={144}
-                />
-              ))}
-            </div>
-          </div>
+          <GallerySwiper photos={camper.gallery} camperName={camper.name} />
 
           <div className="info-container">
             <section className="header-rating">
